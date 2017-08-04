@@ -101,6 +101,10 @@ void FgLBFTrain::Train()
 
 	SaveToPath(m_TrainPath + "Model/");
 
+	g_ImageVec.clear();
+	g_TruthShapeVec.clear();
+	g_BoxVec.clear();
+
 	if (!m_TestImagePath.empty())
 	{
 		std::cout << "Test Image" << std::endl;
@@ -124,7 +128,36 @@ void FgLBFTrain::Predict(string ImageListPath)
 {
 	LoadFromPath(m_TrainPath + "Model/");
 
-	cv::VideoCapture Cam(0);
+	vector<Mat_uc>			ImageVec;
+	vector<Mat_d>			TruthShapeVec;
+	vector<cv::Rect>		BoxVec;
+	LoadImageList(ImageListPath, ImageVec, TruthShapeVec, BoxVec);
+
+	if (!ImageVec.empty())
+	{
+		double_t E = 0;
+		int32_t WaitTime = -1;
+		for (int32_t i = 0; i < ImageVec.size(); ++i)
+		{
+			Mat_d PredictShape = Predict(ImageVec[i], BoxVec[i]);
+			double_t Err = CalculateError(TruthShapeVec[i], PredictShape);
+			E += Err;
+			if (WaitTime == -1)
+			{
+				Mat_d ImagePredictShape = Coordinate::Box2Image(PredictShape, BoxVec[i]);
+				std::cout << Err << std::endl;
+				for (int32_t Landmark = 0; Landmark < ImagePredictShape.rows; ++Landmark)
+				{
+					cv::circle(ImageVec[i], { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) }, 2, { 255 }, -1);
+				}
+				cv::imshow("TestImage", ImageVec[i]);
+				if (cv::waitKey(WaitTime) == 'a')
+					WaitTime = 0;
+			}
+		}
+		std::cout << "Error :[" << E << "]\t Mean Error :[" << E / ImageVec.size() << "]" << std::endl;
+	}
+	cv::VideoCapture Cam("K:\\3.mp4");
 
 	cv::Mat ImageColor;
 	cv::CascadeClassifier Cs("../OpenCV/etc/haarcascades/haarcascade_frontalface_alt.xml");
@@ -147,24 +180,13 @@ void FgLBFTrain::Predict(string ImageListPath)
 			LastFaceBoxs = FaceBoxs;
 		for (auto& var : FaceBoxs)
 		{
-			//scale 1.5
-			cv::Rect FaceBox = var;
-			double_t CenterX = FaceBox.x + 0.5 * FaceBox.width;
-			double_t CenterY = FaceBox.y + 0.5 * FaceBox.height;
-
-			FaceBox.x = static_cast<int32_t>(CenterX - 0.75 * FaceBox.width);
-			FaceBox.y = static_cast<int32_t>(CenterY - 0.75 * FaceBox.height);
-			FaceBox.width = static_cast<int32_t>(1.5 * FaceBox.width);
-			FaceBox.height = static_cast<int32_t>(1.5 * FaceBox.height);
-
-			PredictShape = Predict(Image, FaceBox, PredictShape);
-			Mat_d ImagePredictShape = Coordinate::Box2Image(PredictShape, FaceBox);
-
+			PredictShape = Predict(Image, var, PredictShape);
+			Mat_d ImagePredictShape = Coordinate::Box2Image(PredictShape, var);
 			for (int32_t Landmark = 0; Landmark < g_TrainParam.LandmarkNumPerFace; ++Landmark)
 			{
 				cv::circle(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) }, 2, { 255 }, -1);
 			}
-			cv::rectangle(ImageColor, FaceBox, { 0 });
+			cv::rectangle(ImageColor, var, { 0 });
 		}
 		cv::imshow("T", ImageColor);
 		if (cv::waitKey(30) == 'r')
@@ -255,7 +277,7 @@ void FgLBFTrain::SaveToPath(string Path)
 	ofs << g_TrainParam.DataAugmentScale << std::endl;
 
 	for (auto& var : g_TrainParam.LocalRadiusPerStageVec)
-		ofs << var;
+		ofs << var << std::endl;
 
 	ofs.flush();
 	ofs.close();
@@ -271,7 +293,7 @@ void FgLBFTrain::LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector
 {
 	std::ifstream fin(FilePath);
 	if (!fin.is_open())
-		ThrowFaile;
+		return;
 
 	vector<string> ImagePathVec;
 	vector<string> PtsPathVec;
@@ -341,30 +363,25 @@ void FgLBFTrain::LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector
 			fgrs.close();
 		}
 
-		for (auto& var : FaceBoxs)
+		for (const auto& var : FaceBoxs)
 		{
 			//scale 1.5
-			double_t Scale = 2.0;
-			int32_t ImageSize = 400;
+			double_t Scale = 1.5;
+			cv::Rect ScaleRect;
 
 			double_t CenterX = var.x + 0.5 * var.width;
 			double_t CenterY = var.y + 0.5 * var.height;
 
-			var.x = std::max(static_cast<int32_t>(CenterX - Scale / 2 * var.width), 0);
-			var.y = std::max(static_cast<int32_t>(CenterY - Scale / 2 * var.height), 0);
-			var.width = std::min(static_cast<int32_t>(Scale * var.width), Image.cols - var.x);
-			var.height = std::min(static_cast<int32_t>(Scale * var.height), Image.rows - var.y);
+			ScaleRect.x = std::max(static_cast<int32_t>(CenterX - Scale / 2 * var.width), 0);
+			ScaleRect.y = std::max(static_cast<int32_t>(CenterY - Scale / 2 * var.height), 0);
+			ScaleRect.width = std::min(static_cast<int32_t>(Scale * var.width), Image.cols - var.x);
+			ScaleRect.height = std::min(static_cast<int32_t>(Scale * var.height), Image.rows - var.y);
 
-			if (var.contains(MinPoint) && var.contains(MaxPoint))
+			if (ScaleRect.contains(MinPoint) && ScaleRect.contains(MaxPoint))
 			{
-				//scale Image
-				Mat_uc ImageToSave = Image(var);
-				cv::Rect Box = { 0,0,ImageSize,var.height * ImageSize / var.width };
-				cv::resize(ImageToSave, ImageToSave, { Box.width,Box.height }, 0, 0, CV_INTER_AREA);
-
 				std::lock_guard<std::mutex> Lock(mtx);
-				ImageVec.push_back(ImageToSave);
-				BoxVec.push_back(Box);
+				ImageVec.push_back(Image);
+				BoxVec.push_back(var);
 				TruthShape.push_back(Coordinate::Image2Box(Shape, var));
 				break;
 			}
@@ -378,6 +395,8 @@ void FgLBFTrain::DataAugment()
 	std::mt19937 rng;
 	rng.seed(std::random_device()());
 	std::uniform_int_distribution<int32_t> RandomGen(0, static_cast<int32_t>(g_ImageVec.size() - 1));
+	std::uniform_int_distribution<int32_t> RotateAngleGen(0, 30);
+	std::uniform_real_distribution<double_t> ScaleGen(0.7, 1.3);
 
 	for (int32_t i = 0; i < g_ImageVec.size(); ++i)
 	{
@@ -398,6 +417,19 @@ void FgLBFTrain::DataAugment()
 			m_FaceDataVec.push_back(temp);
 		}
 
+		for (int32_t j = 0; j < g_TrainParam.DataAugmentScale; ++j)
+		{
+			Mat_d RotationMat = cv::getRotationMatrix2D({ 0,0 }, RotateAngleGen(rng), ScaleGen(rng));
+			vector<cv::Point2d> TempVec;
+			cv::transform(ShapeToVecPoint(g_TrainParam.MeanShape.clone()), TempVec, RotationMat);
+
+			FgFaceData temp;
+			temp.BoxIdx = i;
+			temp.ImageIdx = i;
+			temp.TruthShapeIdx = i;
+			temp.CurrentShape = VecPointToShape(TempVec);
+		}
+
 		FgFaceData temp;
 		temp.BoxIdx = i;
 		temp.ImageIdx = i;
@@ -406,23 +438,4 @@ void FgLBFTrain::DataAugment()
 
 		m_FaceDataVec.push_back(temp);
 	}
-
-	//rotate & scale
-	std::uniform_int_distribution<int32_t> RotateAngleGen(0, 30);
-	std::uniform_real_distribution<double_t> ScaleGen(0.8, 1.2);
-
-	std::mutex mtx;
-	concurrency::parallel_for<size_t>(0, m_FaceDataVec.size(), [&](size_t j) 
-	{
-		Mat_d RotationMat = cv::getRotationMatrix2D({ 0,0 }, RotateAngleGen(rng), ScaleGen(rng));
-
-		vector<cv::Point2d> TempVec;
-		cv::transform(ShapeToVecPoint(m_FaceDataVec[j].CurrentShape), TempVec, RotationMat);
-
-		FgFaceData temp = m_FaceDataVec[j];
-		temp.CurrentShape = VecPointToShape(TempVec);
-
-		std::lock_guard<std::mutex> Lock(mtx);
-		m_FaceDataVec.push_back(temp);
-	});
 }

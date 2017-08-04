@@ -153,7 +153,7 @@ vector<Mat_d> FgLBFRegressor::Train(int32_t Stage)
 	RegressionParams->solver_type = L2R_L2LOSS_SVR_DUAL;
 	RegressionParams->C = 1.0 / m_FaceDataVec.size();
 	RegressionParams->p = 0;
-	RegressionParams->eps = 0.1;
+	RegressionParams->eps = 0.0001;
 
 	m_LinearModelX.resize(g_TrainParam.LandmarkNumPerFace);
 	m_LinearModelY.resize(g_TrainParam.LandmarkNumPerFace);

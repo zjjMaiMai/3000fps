@@ -197,11 +197,11 @@ std::tuple<int32_t, int32_t, Mat_<int32_t>> FgLBFRandomForest::CalcSplitFeature(
 		{
 			cv::Mat unuse;
 
-			std::mt19937 rng;
-			rng.seed(std::random_device()());
-			std::uniform_real_distribution<double_t> RandomGen(0.05, 0.95);
+			std::mt19937 Rng;
+			Rng.seed(std::random_device()());
+			std::uniform_int_distribution<int32_t> RandomDistribution(0, InputToCalc.cols - 1);
 
-			auto& e = InputToCalc(0, static_cast<int32_t> (floor(InputToCalc.cols * RandomGen(rng))));
+			auto& e = InputToCalc(0, RandomDistribution(Rng));
 
 			{
 				int32_t TestThreshold = e;

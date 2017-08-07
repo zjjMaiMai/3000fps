@@ -112,7 +112,7 @@ void FgLBFTrain::Train()
 		vector<Mat_uc>			ImageVec;
 		vector<Mat_d>			TruthShapeVec;
 		vector<cv::Rect>		BoxVec;
-		LoadImageList(m_TrainPath + "Test_Image.txt", ImageVec, TruthShapeVec, BoxVec);
+		LoadImageList(m_TrainPath + m_TestImagePath, ImageVec, TruthShapeVec, BoxVec);
 
 		double_t E = 0;
 		for (int32_t i = 0; i < ImageVec.size(); ++i)
@@ -156,8 +156,11 @@ void FgLBFTrain::Predict(string ImageListPath)
 			}
 		}
 		std::cout << "Error :[" << E << "]\t Mean Error :[" << E / ImageVec.size() << "]" << std::endl;
+		return;
 	}
-	cv::VideoCapture Cam("K:\\3.mp4");
+	cv::VideoCapture Cam(0);
+	//Cam.set(cv::CAP_PROP_FRAME_WIDTH, 1920.0);
+	//Cam.set(cv::CAP_PROP_FRAME_HEIGHT, 1080.0);
 
 	cv::Mat ImageColor;
 	cv::CascadeClassifier Cs("../OpenCV/etc/haarcascades/haarcascade_frontalface_alt.xml");
@@ -182,10 +185,62 @@ void FgLBFTrain::Predict(string ImageListPath)
 		{
 			PredictShape = Predict(Image, var, PredictShape);
 			Mat_d ImagePredictShape = Coordinate::Box2Image(PredictShape, var);
-			for (int32_t Landmark = 0; Landmark < g_TrainParam.LandmarkNumPerFace; ++Landmark)
+			for (int32_t Landmark = 0; Landmark < 16; ++Landmark)
 			{
-				cv::circle(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) }, 2, { 255 }, -1);
+				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
+				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
 			}
+			for (int32_t Landmark = 17; Landmark < 21; ++Landmark)
+			{
+				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
+				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
+			}
+			for (int32_t Landmark = 22; Landmark < 26; ++Landmark)
+			{
+				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
+				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
+			}
+			for (int32_t Landmark = 27; Landmark < 30; ++Landmark)
+			{
+				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
+				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
+			}
+			for (int32_t Landmark = 31; Landmark < 35; ++Landmark)
+			{
+				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
+				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
+			}
+			for (int32_t Landmark = 36; Landmark < 41; ++Landmark)
+			{
+				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
+				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
+			}
+			for (int32_t Landmark = 42; Landmark < 47; ++Landmark)
+			{
+				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
+				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
+			}
+			for (int32_t Landmark = 48; Landmark < 59; ++Landmark)
+			{
+				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
+				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
+			}
+			for (int32_t Landmark = 60; Landmark < 67; ++Landmark)
+			{
+				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
+				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
+			}
+			cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(48,0)) ,static_cast<int32_t>(ImagePredictShape(48,1)) },
+			{ static_cast<int32_t>(ImagePredictShape(59,0)) ,static_cast<int32_t>(ImagePredictShape(59,1)) }, { 0,255,0 });
+
+			cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(60,0)) ,static_cast<int32_t>(ImagePredictShape(60,1)) },
+			{ static_cast<int32_t>(ImagePredictShape(67 ,0)) ,static_cast<int32_t>(ImagePredictShape(67,1)) }, { 0,255,0 });
+
+
+			cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(36,0)) ,static_cast<int32_t>(ImagePredictShape(36,1)) },
+			{ static_cast<int32_t>(ImagePredictShape(41,0)) ,static_cast<int32_t>(ImagePredictShape(41,1)) }, { 0,255,0 });
+			cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(42,0)) ,static_cast<int32_t>(ImagePredictShape(42,1)) },
+			{ static_cast<int32_t>(ImagePredictShape(47,0)) ,static_cast<int32_t>(ImagePredictShape(47,1)) }, { 0,255,0 });
 			cv::rectangle(ImageColor, var, { 0 });
 		}
 		cv::imshow("T", ImageColor);
@@ -374,8 +429,8 @@ void FgLBFTrain::LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector
 
 			ScaleRect.x = std::max(static_cast<int32_t>(CenterX - Scale / 2 * var.width), 0);
 			ScaleRect.y = std::max(static_cast<int32_t>(CenterY - Scale / 2 * var.height), 0);
-			ScaleRect.width = std::min(static_cast<int32_t>(Scale * var.width), Image.cols - var.x);
-			ScaleRect.height = std::min(static_cast<int32_t>(Scale * var.height), Image.rows - var.y);
+			ScaleRect.width = std::min(static_cast<int32_t>(Scale * var.width), Image.cols - ScaleRect.x + 2);
+			ScaleRect.height = std::min(static_cast<int32_t>(Scale * var.height), Image.rows - ScaleRect.y + 2);
 
 			if (ScaleRect.contains(MinPoint) && ScaleRect.contains(MaxPoint))
 			{
@@ -383,9 +438,18 @@ void FgLBFTrain::LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector
 				ImageVec.push_back(Image);
 				BoxVec.push_back(var);
 				TruthShape.push_back(Coordinate::Image2Box(Shape, var));
-				break;
+				return;
 			}
 		}
+
+		//cv::Rect var = cv::Rect(MinPoint, MaxPoint);
+		//{
+		//	std::lock_guard<std::mutex> Lock(mtx);
+		//	ImageVec.push_back(Image);
+		//	BoxVec.push_back(var);
+		//	TruthShape.push_back(Coordinate::Image2Box(Shape, var));
+		//	return;
+		//}
 	}
 	);
 }
@@ -395,8 +459,6 @@ void FgLBFTrain::DataAugment()
 	std::mt19937 rng;
 	rng.seed(std::random_device()());
 	std::uniform_int_distribution<int32_t> RandomGen(0, static_cast<int32_t>(g_ImageVec.size() - 1));
-	std::uniform_int_distribution<int32_t> RotateAngleGen(0, 30);
-	std::uniform_real_distribution<double_t> ScaleGen(0.7, 1.3);
 
 	for (int32_t i = 0; i < g_ImageVec.size(); ++i)
 	{
@@ -415,19 +477,6 @@ void FgLBFTrain::DataAugment()
 			temp.CurrentShape = g_TruthShapeVec[idx].clone();
 
 			m_FaceDataVec.push_back(temp);
-		}
-
-		for (int32_t j = 0; j < g_TrainParam.DataAugmentScale; ++j)
-		{
-			Mat_d RotationMat = cv::getRotationMatrix2D({ 0,0 }, RotateAngleGen(rng), ScaleGen(rng));
-			vector<cv::Point2d> TempVec;
-			cv::transform(ShapeToVecPoint(g_TrainParam.MeanShape.clone()), TempVec, RotationMat);
-
-			FgFaceData temp;
-			temp.BoxIdx = i;
-			temp.ImageIdx = i;
-			temp.TruthShapeIdx = i;
-			temp.CurrentShape = VecPointToShape(TempVec);
 		}
 
 		FgFaceData temp;

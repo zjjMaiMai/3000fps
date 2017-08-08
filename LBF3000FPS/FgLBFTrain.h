@@ -50,7 +50,7 @@ public:
 	void Train();
 
 	void Predict(string ImageListPath);
-	Mat_d Predict(Mat_uc & Image, cv::Rect Box, Mat_d& LastFrame = Mat_d());
+	Mat_d Predict(Mat_uc & Image, cv::Rect2d Box, Mat_d& LastFrame = Mat_d());
 private:
 	string			m_TrainPath;
 	string			m_TestImagePath;
@@ -62,7 +62,7 @@ private:
 	void LoadFromPath(string File);
 	void SaveToPath(string Path);
 
-	void LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector<Mat_d>& TruthShape, vector<cv::Rect>& BoxVec);
+	void LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector<Mat_d>& TruthShape, vector<cv::Rect2d>& BoxVec);
 	void DataAugment();
 };
 

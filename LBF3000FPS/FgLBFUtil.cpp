@@ -35,7 +35,7 @@
 #include "FgLBFUtil.h"
 
 
-Mat_d Coordinate::Image2Box(const Mat_d& shape, const cv::Rect& box)
+Mat_d Coordinate::Image2Box(const Mat_d& shape, const cv::Rect2d& box)
 {
 	double_t boxcenterX = box.x + box.width / 2.0;
 	double_t boxcenterY = box.y + box.height / 2.0;
@@ -49,7 +49,7 @@ Mat_d Coordinate::Image2Box(const Mat_d& shape, const cv::Rect& box)
 	return results;
 }
 
-Mat_d Coordinate::Box2Image(const Mat_d& shape, const cv::Rect& box)
+Mat_d Coordinate::Box2Image(const Mat_d& shape, const cv::Rect2d& box)
 {
 	double_t boxcenterX = box.x + box.width / 2.0;
 	double_t boxcenterY = box.y + box.height / 2.0;
@@ -63,7 +63,7 @@ Mat_d Coordinate::Box2Image(const Mat_d& shape, const cv::Rect& box)
 	return results;
 }
 
-Mat_d GetMeanShape(const vector<Mat_d>& allShape, const vector<cv::Rect>& allBoxes)
+Mat_d GetMeanShape(const vector<Mat_d>& allShape, const vector<cv::Rect2d>& allBoxes)
 {
 	Mat_d meanShape = Mat_d::zeros(allShape[0].rows, 2);
 
@@ -109,7 +109,7 @@ Mat_d VecPointToShape(const vector<cv::Point2d>& VecPoint)
 
 vector<Mat_uc>			g_ImageVec;
 vector<Mat_d>			g_TruthShapeVec;
-vector<cv::Rect>		g_BoxVec;
+vector<cv::Rect2d>		g_BoxVec;
 
 FgLBFParam				g_TrainParam;
 

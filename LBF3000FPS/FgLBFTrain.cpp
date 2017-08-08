@@ -111,7 +111,7 @@ void FgLBFTrain::Train()
 
 		vector<Mat_uc>			ImageVec;
 		vector<Mat_d>			TruthShapeVec;
-		vector<cv::Rect>		BoxVec;
+		vector<cv::Rect2d>		BoxVec;
 		LoadImageList(m_TrainPath + m_TestImagePath, ImageVec, TruthShapeVec, BoxVec);
 
 		double_t E = 0;
@@ -130,7 +130,7 @@ void FgLBFTrain::Predict(string ImageListPath)
 
 	vector<Mat_uc>			ImageVec;
 	vector<Mat_d>			TruthShapeVec;
-	vector<cv::Rect>		BoxVec;
+	vector<cv::Rect2d>		BoxVec;
 	LoadImageList(ImageListPath, ImageVec, TruthShapeVec, BoxVec);
 
 	if (!ImageVec.empty())
@@ -165,7 +165,7 @@ void FgLBFTrain::Predict(string ImageListPath)
 	cv::Mat ImageColor;
 	cv::CascadeClassifier Cs("../OpenCV/etc/haarcascades/haarcascade_frontalface_alt.xml");
 
-	vector<cv::Rect> LastFaceBoxs;
+	vector<cv::Rect2i> LastFaceBoxs;
 	Mat_d PredictShape;
 	while (true)
 	{
@@ -173,7 +173,7 @@ void FgLBFTrain::Predict(string ImageListPath)
 		Cam >> ImageColor;
 		cvtColor(ImageColor, Image, CV_BGR2GRAY);
 
-		vector<cv::Rect> FaceBoxs;
+		vector<cv::Rect2i> FaceBoxs;
 		if (LastFaceBoxs.empty())
 			Cs.detectMultiScale(Image, FaceBoxs);
 
@@ -253,7 +253,7 @@ void FgLBFTrain::Predict(string ImageListPath)
 
 }
 
-Mat_d FgLBFTrain::Predict(Mat_uc & Image, cv::Rect Box, Mat_d& LastFrame)
+Mat_d FgLBFTrain::Predict(Mat_uc & Image, cv::Rect2d Box, Mat_d& LastFrame)
 {
 	Mat_d TransformedMeanShape;
 	if (LastFrame.empty())
@@ -344,7 +344,7 @@ void FgLBFTrain::SaveToPath(string Path)
 	return;
 }
 
-void FgLBFTrain::LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector<Mat_d>& TruthShape, vector<cv::Rect>& BoxVec)
+void FgLBFTrain::LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector<Mat_d>& TruthShape, vector<cv::Rect2d>& BoxVec)
 {
 	std::ifstream fin(FilePath);
 	if (!fin.is_open())
@@ -372,6 +372,7 @@ void FgLBFTrain::LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector
 	fin.close();
 
 	std::mutex mtx;
+	//for(int i = 0;i<ImagePathVec.size();++i)
 	concurrency::parallel_for(0, static_cast<int32_t>(ImagePathVec.size()), [&](int32_t i)
 	{
 		Mat_d Shape(g_TrainParam.LandmarkNumPerFace, 2, 0.0);
@@ -406,7 +407,7 @@ void FgLBFTrain::LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector
 		cv::Point2i MinPoint = cv::Point2i(static_cast<int32_t>(MinX), static_cast<int32_t>(MinY));
 		cv::Point2i MaxPoint = cv::Point2i(cvCeil(MaxX), cvCeil(MaxY));
 
-		vector<cv::Rect> FaceBoxs;
+		vector<cv::Rect2d> FaceBoxs;
 		std::ifstream fgrs(FgrPathVec[i]);
 		if (fgrs.is_open())
 		{
@@ -422,34 +423,29 @@ void FgLBFTrain::LoadImageList(string FilePath, vector<Mat_uc>& ImageVec, vector
 		{
 			//scale 1.5
 			double_t Scale = 1.5;
-			cv::Rect ScaleRect;
+			cv::Rect2d ScaleRect;
 
 			double_t CenterX = var.x + 0.5 * var.width;
 			double_t CenterY = var.y + 0.5 * var.height;
 
-			ScaleRect.x = std::max(static_cast<int32_t>(CenterX - Scale / 2 * var.width), 0);
-			ScaleRect.y = std::max(static_cast<int32_t>(CenterY - Scale / 2 * var.height), 0);
-			ScaleRect.width = std::min(static_cast<int32_t>(Scale * var.width), Image.cols - ScaleRect.x + 2);
-			ScaleRect.height = std::min(static_cast<int32_t>(Scale * var.height), Image.rows - ScaleRect.y + 2);
+			ScaleRect.x = std::max(CenterX - Scale / 2 * var.width, 0.0);
+			ScaleRect.y = std::max(CenterY - Scale / 2 * var.height, 0.0);
+			ScaleRect.width = std::min(Scale * var.width, -ScaleRect.x + Image.cols - 1);
+			ScaleRect.height = std::min(Scale * var.height, -ScaleRect.y + Image.rows - 1);
 
 			if (ScaleRect.contains(MinPoint) && ScaleRect.contains(MaxPoint))
 			{
+				Mat_uc ImageScale = Image(ScaleRect);
+				cv::resize(ImageScale, ImageScale, { IMG_MAX_SIZE,IMG_MAX_SIZE });
+				Mat_d Ts = Coordinate::Image2Box(Shape, ScaleRect);
+
 				std::lock_guard<std::mutex> Lock(mtx);
-				ImageVec.push_back(Image);
-				BoxVec.push_back(var);
-				TruthShape.push_back(Coordinate::Image2Box(Shape, var));
-				return;
+				TruthShape.push_back(Ts);
+				ImageVec.push_back(ImageScale);
+				BoxVec.push_back({ 0.0,0.0,IMG_MAX_SIZE,IMG_MAX_SIZE });
+				break;
 			}
 		}
-
-		//cv::Rect var = cv::Rect(MinPoint, MaxPoint);
-		//{
-		//	std::lock_guard<std::mutex> Lock(mtx);
-		//	ImageVec.push_back(Image);
-		//	BoxVec.push_back(var);
-		//	TruthShape.push_back(Coordinate::Image2Box(Shape, var));
-		//	return;
-		//}
 	}
 	);
 }

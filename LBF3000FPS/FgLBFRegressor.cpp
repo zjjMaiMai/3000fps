@@ -1,7 +1,7 @@
 /*
 +	LBF3000
 +	A Implementation of highly efficient and very accurate regression approach for face alignment.
-    Quantum Dynamics Co.,Ltd. 量子动力（深圳）计算机科技有限公司
+	Quantum Dynamics Co.,Ltd. 量子动力（深圳）计算机科技有限公司
 
 	Based on the paper 'Face Alignment at 3000 FPS via Regressing Local Binary Features'
 	University of Science and Technology of China.
@@ -153,7 +153,7 @@ vector<Mat_d> FgLBFRegressor::Train(int32_t Stage)
 	RegressionParams->solver_type = L2R_L2LOSS_SVR_DUAL;
 	RegressionParams->C = 1.0 / m_FaceDataVec.size();
 	RegressionParams->p = 0;
-	RegressionParams->eps = 0.1;
+	RegressionParams->eps = 0.0001;
 
 	m_LinearModelX.resize(g_TrainParam.LandmarkNumPerFace);
 	m_LinearModelY.resize(g_TrainParam.LandmarkNumPerFace);
@@ -216,7 +216,7 @@ vector<Mat_d> FgLBFRegressor::Train(int32_t Stage)
 	return PredictRegressionTargets;
 }
 
-Mat_d FgLBFRegressor::Predict(Mat_uc& Image, Mat_d& CurrentShape, cv::Rect& Box, Mat_d& MeanShapeTo)
+Mat_d FgLBFRegressor::Predict(Mat_uc& Image, Mat_d& CurrentShape, cv::Rect2d& Box, Mat_d& MeanShapeTo)
 {
 	static feature_node* Features = new feature_node[g_TrainParam.TreeNumPerForest * g_TrainParam.LandmarkNumPerFace + 1]();
 

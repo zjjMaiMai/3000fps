@@ -44,7 +44,7 @@ public:
 	~FgLBFRegressor();
 
 	vector<Mat_d> Train(int32_t Stage);
-	Mat_d Predict(Mat_uc& Image, Mat_d& CurrentShape, cv::Rect& Box, Mat_d& MeanShapeTo);
+	Mat_d Predict(Mat_uc& Image, Mat_d& CurrentShape, cv::Rect2d& Box, Mat_d& MeanShapeTo);
 
 	void LoadFromPath(string Path, int32_t Idx);
 	void SaveToPath(string Path, int32_t Idx);

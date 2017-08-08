@@ -70,17 +70,13 @@ void FgLBFRandomForest::TrainForest(const vector<Mat_d>& TargetVec)
 
 	Mat_<int32_t> PixDifferences(g_TrainParam.LocalFeaturesNum, AllSamplesNum);
 
+	Mat_d RandomPoints = Mat_d::zeros(2, 2);
 	for (int32_t Sample = 0; Sample < AllSamplesNum; ++Sample)
 	{
 		const FgFaceData& FaceData = m_FaceDataVec[Sample];
 		for (int32_t Feature = 0; Feature < g_TrainParam.LocalFeaturesNum; ++Feature)
 		{
-			Mat_d RandomPoints = Mat_d::zeros(2, 2);
-
-			cv::Point2d A = m_LocationFeature[Feature].first;
-			cv::Point2d B = m_LocationFeature[Feature].second;
-
-			vector<cv::Point2d> Vec{ A,B };
+			vector<cv::Point2d> Vec{ m_LocationFeature[Feature].first,m_LocationFeature[Feature].second };
 			cv::transform(Vec, Vec, FaceData.MeanShapeTo);
 
 			RandomPoints(0, 0) = Vec[0].x + FaceData.CurrentShape(m_LandmarkIdx, 0);
@@ -181,7 +177,7 @@ FgLBFNode * FgLBFRandomForest::BuildTree(const Mat_<int32_t>& PixDifferences, co
 
 std::tuple<int32_t, int32_t, Mat_<int32_t>> FgLBFRandomForest::CalcSplitFeature(const Mat_<int32_t>& Input, const vector<int32_t>& SelectedIdxVec, const vector<int32_t>& DataIdxVec, const vector<Mat_d>& TargetVec)
 {
-	double_t MinVariance = FLT_MAX;
+	double_t MaxVariance = -FLT_MAX;
 	int32_t Threshold = INT32_MIN;
 	int32_t SamplesRows = INT32_MIN;
 	Mat_<int32_t> Samples;
@@ -190,8 +186,8 @@ std::tuple<int32_t, int32_t, Mat_<int32_t>> FgLBFRandomForest::CalcSplitFeature(
 
 	for (int32_t row = 0; row < Input.rows; ++row)
 	{
-		if (std::find(SelectedIdxVec.begin(), SelectedIdxVec.end(), row) != SelectedIdxVec.end())
-			continue;
+		//if (std::find(SelectedIdxVec.begin(), SelectedIdxVec.end(), row) != SelectedIdxVec.end())
+		//	continue;
 
 		Mat_<int32_t> InputToCalc = Input.row(row);
 		{
@@ -202,10 +198,9 @@ std::tuple<int32_t, int32_t, Mat_<int32_t>> FgLBFRandomForest::CalcSplitFeature(
 			std::uniform_int_distribution<int32_t> RandomDistribution(0, InputToCalc.cols - 1);
 
 			auto& e = InputToCalc(0, RandomDistribution(Rng));
-
 			{
 				int32_t TestThreshold = e;
-				vector<double_t> LeftX, LeftY, RightX, RightY;
+				vector<double_t> LeftX, LeftY, RightX, RightY, AllX, AllY;
 				for (int32_t i = 0; i < InputToCalc.cols; ++i)
 				{
 					Mat_d Var = TargetVec[DataIdxVec[i]].row(m_LandmarkIdx);
@@ -220,11 +215,15 @@ std::tuple<int32_t, int32_t, Mat_<int32_t>> FgLBFRandomForest::CalcSplitFeature(
 						RightX.push_back(Var(0, 0));
 						RightY.push_back(Var(0, 1));
 					}
+					AllX.push_back(Var(0, 0));
+					AllY.push_back(Var(0, 1));
 				}
-				double_t Sum = (CalcVariance(LeftX) + CalcVariance(LeftY)) * LeftX.size() + (CalcVariance(RightX) + CalcVariance(RightY)) * RightX.size();
-				if (Sum < MinVariance)
+				double_t Sum = (CalcVariance(AllX) + CalcVariance(AllY)) * AllX.size()
+					- (CalcVariance(LeftX) + CalcVariance(LeftY)) * LeftX.size()
+					- (CalcVariance(RightX) + CalcVariance(RightY)) * RightX.size();
+				if (Sum > MaxVariance)
 				{
-					MinVariance = Sum;
+					MaxVariance = Sum;
 					Threshold = TestThreshold;
 					SamplesRows = row;
 					Samples = InputToCalc;

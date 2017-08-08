@@ -59,15 +59,15 @@ typedef Mat_<double_t> Mat_d;
 typedef Mat_<uchar> Mat_uc;
 
 #define ThrowFaile throw (std::string(__FILE__) + "[line: " + std::to_string(__LINE__) + " ]")
-#define IMG_MAX_SIZE 1000
+#define IMG_MAX_SIZE 400
 
 namespace Coordinate
 {
-	Mat_d Image2Box(const Mat_d & shape, const cv::Rect & box);
-	Mat_d Box2Image(const Mat_d & shape, const cv::Rect & box);
+	Mat_d Image2Box(const Mat_d & shape, const cv::Rect2d & box);
+	Mat_d Box2Image(const Mat_d & shape, const cv::Rect2d & box);
 }
 
-Mat_d GetMeanShape(const vector<Mat_d>& allShape, const vector<cv::Rect>& allBoxes);
+Mat_d GetMeanShape(const vector<Mat_d>& allShape, const vector<cv::Rect2d>& allBoxes);
 
 double_t CalcVariance(const vector<double_t>& vec);
 
@@ -110,5 +110,5 @@ struct FgLBFParam
 
 extern vector<Mat_uc>			g_ImageVec;
 extern vector<Mat_d>			g_TruthShapeVec;
-extern vector<cv::Rect>			g_BoxVec;
+extern vector<cv::Rect2d>		g_BoxVec;
 extern FgLBFParam				g_TrainParam;

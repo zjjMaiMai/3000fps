@@ -83,6 +83,11 @@ void FgLBFTrain::Load()
 
 	g_TrainParam.MeanShape = GetMeanShape(g_TruthShapeVec, g_BoxVec);
 
+	vector<cv::Point2d> Src2d = ShapeToVecPoint(g_TrainParam.MeanShape);
+	vector<cv::Point2f> Src2f;
+
+	std::copy(Src2d.begin(), Src2d.end(), std::back_inserter(Src2f));
+	cv::convexHull(Src2f, g_ConvexHull);
 	//Data Augment
 	DataAugment();
 }
@@ -155,7 +160,7 @@ void FgLBFTrain::Predict(string ImageListPath)
 		std::cout << "Error :[" << E << "]\t Mean Error :[" << E / ImageVec.size() << "]" << std::endl;
 		return;
 	}
-	cv::VideoCapture Cam(0);
+	cv::VideoCapture Cam("D:\\1.mp4");
 	//Cam.set(cv::CAP_PROP_FRAME_WIDTH, 1920.0);
 	//Cam.set(cv::CAP_PROP_FRAME_HEIGHT, 1080.0);
 
@@ -163,7 +168,7 @@ void FgLBFTrain::Predict(string ImageListPath)
 	cv::CascadeClassifier Cs("../OpenCV/etc/haarcascades/haarcascade_frontalface_alt.xml");
 
 	vector<cv::Rect2i> LastFaceBoxs;
-	Mat_d PredictShape;
+	vector<Mat_d> PredictShapeVec(20);
 	while (true)
 	{
 		Mat_uc Image;
@@ -178,18 +183,19 @@ void FgLBFTrain::Predict(string ImageListPath)
 			FaceBoxs = LastFaceBoxs;
 		else
 			LastFaceBoxs = FaceBoxs;
-		for (auto& var : FaceBoxs)
+		for (int32_t i = 0; i < FaceBoxs.size(); ++i)
 		{
-			PredictShape = Predict(Image, var, PredictShape);
-			Mat_d ImagePredictShape = Coordinate::Box2Image(PredictShape, var);
+			PredictShapeVec[i] = Predict(Image, FaceBoxs[i], PredictShapeVec[i]);
+			Mat_d ImagePredictShape = Coordinate::Box2Image(PredictShapeVec[i], FaceBoxs[i]);
 			ImageColor = DrawLandmark(ImagePredictShape, ImageColor, false);
-			cv::rectangle(ImageColor, var, { 0 });
+			cv::rectangle(ImageColor, FaceBoxs[i], { 0 });
 		}
 		cv::imshow("T", ImageColor);
 		if (cv::waitKey(30) == 'r')
 		{
 			LastFaceBoxs.clear();
-			PredictShape = Mat_d();
+			for (auto& var : PredictShapeVec)
+				var = Mat_d();
 		}
 	}
 

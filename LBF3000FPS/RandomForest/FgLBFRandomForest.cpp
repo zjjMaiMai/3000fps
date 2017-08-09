@@ -58,12 +58,12 @@ void FgLBFRandomForest::TrainForest(const vector<Mat_d>& TargetVec)
 		{
 			A.x = RandomGen(rng);
 			A.y = RandomGen(rng);
-		} while (A.x*A.x + A.y*A.y > RandomRadiu*RandomRadiu);
+		} while (A.x*A.x + A.y*A.y > RandomRadiu*RandomRadiu || cv::pointPolygonTest(g_ConvexHull, A, false) < 0);
 		do
 		{
 			B.x = RandomGen(rng);
 			B.y = RandomGen(rng);
-		} while (B.x*B.x + B.y*B.y > RandomRadiu*RandomRadiu);
+		} while (B.x*B.x + B.y*B.y > RandomRadiu*RandomRadiu || cv::pointPolygonTest(g_ConvexHull, B, false) < 0);
 
 		m_LocationFeature.push_back(std::make_pair(A, B));
 	}

@@ -107,11 +107,11 @@ Mat_d VecPointToShape(const vector<cv::Point2d>& VecPoint)
 }
 
 
-vector<Mat_uc>			g_ImageVec;
-vector<Mat_d>			g_TruthShapeVec;
-vector<cv::Rect2d>		g_BoxVec;
-
-FgLBFParam				g_TrainParam;
+vector<Mat_uc>				g_ImageVec;
+vector<Mat_d>				g_TruthShapeVec;
+vector<cv::Rect2d>			g_BoxVec;
+FgLBFParam					g_TrainParam;
+vector<cv::Point2f>			g_ConvexHull;
 
 std::ofstream & operator<<(std::ofstream & Out, Mat_d & Obj)
 {

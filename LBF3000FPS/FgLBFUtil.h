@@ -110,7 +110,8 @@ struct FgLBFParam
 	vector<double_t>		LocalRadiusPerStageVec;
 };
 
-extern vector<Mat_uc>			g_ImageVec;
-extern vector<Mat_d>			g_TruthShapeVec;
-extern vector<cv::Rect2d>		g_BoxVec;
-extern FgLBFParam				g_TrainParam;
+extern vector<Mat_uc>				g_ImageVec;
+extern vector<Mat_d>				g_TruthShapeVec;
+extern vector<cv::Rect2d>			g_BoxVec;
+extern FgLBFParam					g_TrainParam;
+extern vector<cv::Point2f>			g_ConvexHull;

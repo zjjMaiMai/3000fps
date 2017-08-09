@@ -79,6 +79,8 @@ Mat_d FgGetAffineTransform(const Mat_d & ShapeFrom, const Mat_d & ShapeTo);
 
 double_t CalculateError(Mat_d& TruthShape, Mat_d& PredictedShape);
 
+cv::Mat DrawLandmark(const Mat_d& Shape, const cv::Mat& Image, bool isDrawPoint);
+
 std::ofstream & operator << (std::ofstream &Out, Mat_d &Obj);
 std::ifstream & operator >> (std::ifstream &In, Mat_d &Obj);
 

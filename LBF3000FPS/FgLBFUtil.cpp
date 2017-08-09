@@ -179,3 +179,72 @@ double_t CalculateError(Mat_d& TruthShape, Mat_d& PredictedShape)
 	}
 	return Sum / (TruthShape.rows * InterocularDistance);
 }
+
+cv::Mat DrawLandmark(const Mat_d & Shape, const cv::Mat & Image, bool isDrawPoint)
+{
+	cv::Mat Ret = Image.clone();
+	if (isDrawPoint)
+	{
+		for (int32_t Landmark = 0; Landmark < Shape.rows; ++Landmark)
+		{
+			cv::circle(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) }, 2, { 0,255,0 }, -1);
+		}
+	}
+	else
+	{
+		for (int32_t Landmark = 0; Landmark < 16; ++Landmark)
+		{
+			cv::line(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) },
+			{ static_cast<int32_t>(Shape(Landmark + 1,0)) ,static_cast<int32_t>(Shape(Landmark + 1,1)) }, { 0,255,0 });
+		}
+		for (int32_t Landmark = 17; Landmark < 21; ++Landmark)
+		{
+			cv::line(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) },
+			{ static_cast<int32_t>(Shape(Landmark + 1,0)) ,static_cast<int32_t>(Shape(Landmark + 1,1)) }, { 0,255,0 });
+		}
+		for (int32_t Landmark = 22; Landmark < 26; ++Landmark)
+		{
+			cv::line(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) },
+			{ static_cast<int32_t>(Shape(Landmark + 1,0)) ,static_cast<int32_t>(Shape(Landmark + 1,1)) }, { 0,255,0 });
+		}
+		for (int32_t Landmark = 27; Landmark < 30; ++Landmark)
+		{
+			cv::line(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) },
+			{ static_cast<int32_t>(Shape(Landmark + 1,0)) ,static_cast<int32_t>(Shape(Landmark + 1,1)) }, { 0,255,0 });
+		}
+		for (int32_t Landmark = 31; Landmark < 35; ++Landmark)
+		{
+			cv::line(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) },
+			{ static_cast<int32_t>(Shape(Landmark + 1,0)) ,static_cast<int32_t>(Shape(Landmark + 1,1)) }, { 0,255,0 });
+		}
+		for (int32_t Landmark = 36; Landmark < 41; ++Landmark)
+		{
+			cv::line(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) },
+			{ static_cast<int32_t>(Shape(Landmark + 1,0)) ,static_cast<int32_t>(Shape(Landmark + 1,1)) }, { 0,255,0 });
+		}
+		for (int32_t Landmark = 42; Landmark < 47; ++Landmark)
+		{
+			cv::line(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) },
+			{ static_cast<int32_t>(Shape(Landmark + 1,0)) ,static_cast<int32_t>(Shape(Landmark + 1,1)) }, { 0,255,0 });
+		}
+		for (int32_t Landmark = 48; Landmark < 59; ++Landmark)
+		{
+			cv::line(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) },
+			{ static_cast<int32_t>(Shape(Landmark + 1,0)) ,static_cast<int32_t>(Shape(Landmark + 1,1)) }, { 0,255,0 });
+		}
+		for (int32_t Landmark = 60; Landmark < 67; ++Landmark)
+		{
+			cv::line(Ret, { static_cast<int32_t>(Shape(Landmark,0)) ,static_cast<int32_t>(Shape(Landmark,1)) },
+			{ static_cast<int32_t>(Shape(Landmark + 1,0)) ,static_cast<int32_t>(Shape(Landmark + 1,1)) }, { 0,255,0 });
+		}
+		cv::line(Ret, { static_cast<int32_t>(Shape(48,0)) ,static_cast<int32_t>(Shape(48,1)) },
+		{ static_cast<int32_t>(Shape(59,0)) ,static_cast<int32_t>(Shape(59,1)) }, { 0,255,0 });
+		cv::line(Ret, { static_cast<int32_t>(Shape(60,0)) ,static_cast<int32_t>(Shape(60,1)) },
+		{ static_cast<int32_t>(Shape(67 ,0)) ,static_cast<int32_t>(Shape(67,1)) }, { 0,255,0 });
+		cv::line(Ret, { static_cast<int32_t>(Shape(36,0)) ,static_cast<int32_t>(Shape(36,1)) },
+		{ static_cast<int32_t>(Shape(41,0)) ,static_cast<int32_t>(Shape(41,1)) }, { 0,255,0 });
+		cv::line(Ret, { static_cast<int32_t>(Shape(42,0)) ,static_cast<int32_t>(Shape(42,1)) },
+		{ static_cast<int32_t>(Shape(47,0)) ,static_cast<int32_t>(Shape(47,1)) }, { 0,255,0 });
+	}
+	return Ret;
+}

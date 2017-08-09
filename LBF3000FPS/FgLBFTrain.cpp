@@ -146,10 +146,7 @@ void FgLBFTrain::Predict(string ImageListPath)
 			{
 				Mat_d ImagePredictShape = Coordinate::Box2Image(PredictShape, BoxVec[i]);
 				std::cout << Err << std::endl;
-				for (int32_t Landmark = 0; Landmark < ImagePredictShape.rows; ++Landmark)
-				{
-					cv::circle(ImageVec[i], { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) }, 2, { 255 }, -1);
-				}
+				ImageVec[i] = DrawLandmark(ImagePredictShape, ImageVec[i], true);
 				cv::imshow("TestImage", ImageVec[i]);
 				if (cv::waitKey(WaitTime) == 'a')
 					WaitTime = 0;
@@ -185,62 +182,7 @@ void FgLBFTrain::Predict(string ImageListPath)
 		{
 			PredictShape = Predict(Image, var, PredictShape);
 			Mat_d ImagePredictShape = Coordinate::Box2Image(PredictShape, var);
-			for (int32_t Landmark = 0; Landmark < 16; ++Landmark)
-			{
-				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
-				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
-			}
-			for (int32_t Landmark = 17; Landmark < 21; ++Landmark)
-			{
-				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
-				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
-			}
-			for (int32_t Landmark = 22; Landmark < 26; ++Landmark)
-			{
-				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
-				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
-			}
-			for (int32_t Landmark = 27; Landmark < 30; ++Landmark)
-			{
-				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
-				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
-			}
-			for (int32_t Landmark = 31; Landmark < 35; ++Landmark)
-			{
-				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
-				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
-			}
-			for (int32_t Landmark = 36; Landmark < 41; ++Landmark)
-			{
-				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
-				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
-			}
-			for (int32_t Landmark = 42; Landmark < 47; ++Landmark)
-			{
-				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
-				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
-			}
-			for (int32_t Landmark = 48; Landmark < 59; ++Landmark)
-			{
-				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
-				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
-			}
-			for (int32_t Landmark = 60; Landmark < 67; ++Landmark)
-			{
-				cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(Landmark,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark,1)) },
-				{ static_cast<int32_t>(ImagePredictShape(Landmark + 1,0)) ,static_cast<int32_t>(ImagePredictShape(Landmark + 1,1)) }, { 0,255,0 });
-			}
-			cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(48,0)) ,static_cast<int32_t>(ImagePredictShape(48,1)) },
-			{ static_cast<int32_t>(ImagePredictShape(59,0)) ,static_cast<int32_t>(ImagePredictShape(59,1)) }, { 0,255,0 });
-
-			cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(60,0)) ,static_cast<int32_t>(ImagePredictShape(60,1)) },
-			{ static_cast<int32_t>(ImagePredictShape(67 ,0)) ,static_cast<int32_t>(ImagePredictShape(67,1)) }, { 0,255,0 });
-
-
-			cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(36,0)) ,static_cast<int32_t>(ImagePredictShape(36,1)) },
-			{ static_cast<int32_t>(ImagePredictShape(41,0)) ,static_cast<int32_t>(ImagePredictShape(41,1)) }, { 0,255,0 });
-			cv::line(ImageColor, { static_cast<int32_t>(ImagePredictShape(42,0)) ,static_cast<int32_t>(ImagePredictShape(42,1)) },
-			{ static_cast<int32_t>(ImagePredictShape(47,0)) ,static_cast<int32_t>(ImagePredictShape(47,1)) }, { 0,255,0 });
+			ImageColor = DrawLandmark(ImagePredictShape, ImageColor, false);
 			cv::rectangle(ImageColor, var, { 0 });
 		}
 		cv::imshow("T", ImageColor);

@@ -81,7 +81,7 @@ void FgLBFTrain::Load()
 	}
 	TrainConfig.close();
 
-	g_TrainParam.MeanShape = GetMeanShape(g_TruthShapeVec, g_BoxVec);
+	g_TrainParam.MeanShape = GetMeanShape2(g_TruthShapeVec, g_BoxVec);
 
 	vector<cv::Point2d> Src2d = ShapeToVecPoint(g_TrainParam.MeanShape);
 	vector<cv::Point2f> Src2f;
@@ -177,7 +177,24 @@ void FgLBFTrain::Predict(string ImageListPath)
 
 		vector<cv::Rect2i> FaceBoxs;
 		if (LastFaceBoxs.empty())
+		{
 			Cs.detectMultiScale(Image, FaceBoxs);
+			for (auto& var : FaceBoxs)
+			{
+				double_t Scale = 1.5;
+				cv::Rect2d ScaleRect;
+
+				double_t CenterX = var.x + 0.5 * var.width;
+				double_t CenterY = var.y + 0.5 * var.height;
+
+				ScaleRect.x = std::max(CenterX - Scale / 2 * var.width, 0.0);
+				ScaleRect.y = std::max(CenterY - Scale / 2 * var.height, 0.0);
+				ScaleRect.width = std::min(Scale * var.width, -ScaleRect.x + Image.cols - 1);
+				ScaleRect.height = std::min(Scale * var.height, -ScaleRect.y + Image.rows - 1);
+
+				var = ScaleRect;
+			}
+		}
 
 		if (FaceBoxs.empty())
 			FaceBoxs = LastFaceBoxs;
@@ -223,6 +240,7 @@ Mat_d FgLBFTrain::Predict(Mat_uc & Image, cv::Rect2d Box, Mat_d& LastFrame)
 			}
 			cv::imshow("Init", I);
 		}
+		//TransformedMeanShape = LastFrame;
 	}
 	Mat_d CurrentShape = TransformedMeanShape.clone();
 

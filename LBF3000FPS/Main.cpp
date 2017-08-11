@@ -47,9 +47,9 @@ int main(int argc, char *argv[])
 		if (string(argv[1]) == "Predict")
 			Lbf.Predict(argv[3]);
 	}
-	catch (string& e)
+	catch (const exception &e)
 	{
-		cout << e << endl;
+		cout << e.what() << endl;
 	}
 	system("pause");
 	return 0;

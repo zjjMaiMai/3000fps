@@ -58,7 +58,7 @@ using std::string;
 typedef Mat_<double_t> Mat_d;
 typedef Mat_<uchar> Mat_uc;
 
-#define ThrowFaile throw (std::string(__FILE__) + "[line: " + std::to_string(__LINE__) + " ]")
+#define ThrowFaile throw std::runtime_error(std::string(__FILE__) + "[line: " + std::to_string(__LINE__) + " ]")
 #define IMG_MAX_SIZE 400
 
 namespace Coordinate
@@ -68,6 +68,8 @@ namespace Coordinate
 }
 
 Mat_d GetMeanShape(const vector<Mat_d>& allShape, const vector<cv::Rect2d>& allBoxes);
+
+Mat_d GetMeanShape2(const vector<Mat_d>& allShape, const vector<cv::Rect2d>& allBoxes);
 
 double_t CalcVariance(const vector<double_t>& vec);
 

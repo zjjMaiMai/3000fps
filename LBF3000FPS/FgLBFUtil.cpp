@@ -34,6 +34,40 @@
 */
 #include "FgLBFUtil.h"
 
+static Mat_d NormalizeFromEye(const Mat_d& Shape)
+{
+	//just 68 Landmark implementation
+	if (Shape.rows != 68 || Shape.cols != 2)
+		ThrowFaile;
+
+	cv::Point2d Center(0.0, 0.0);
+	Mat_d RetShape = Shape.clone();
+
+	for (int32_t Landmark = 0; Landmark < RetShape.rows; ++Landmark)
+	{
+		Center.x += RetShape(Landmark, 0);
+		Center.y += RetShape(Landmark, 1);
+	}
+	Center /= RetShape.rows;
+
+	for (int32_t Landmark = 0; Landmark < RetShape.rows; ++Landmark)
+	{
+		RetShape(Landmark, 0) -= Center.x;
+		RetShape(Landmark, 1) -= Center.y;
+	}
+
+	Mat_d LeftEye = RetShape.row(36);
+	Mat_d RightEye = RetShape.row(45);
+
+	double_t Theta = -atan((RightEye(0, 1) - LeftEye(0, 1)) / (RightEye(0, 0) - LeftEye(0, 0)));
+
+	Mat_d Transform = cv::getRotationMatrix2D(Center, Theta, 1);
+	vector<cv::Point2d> TempVec;
+	cv::transform(ShapeToVecPoint(RetShape), TempVec, Transform);
+
+	return VecPointToShape(TempVec);
+}
+
 
 Mat_d Coordinate::Image2Box(const Mat_d& shape, const cv::Rect2d& box)
 {
@@ -63,15 +97,44 @@ Mat_d Coordinate::Box2Image(const Mat_d& shape, const cv::Rect2d& box)
 	return results;
 }
 
+//这里的计算是不对的，按照论文说法应该使用ASM算法的迭代计算出meanshape再去算
 Mat_d GetMeanShape(const vector<Mat_d>& allShape, const vector<cv::Rect2d>& allBoxes)
 {
-	Mat_d meanShape = Mat_d::zeros(allShape[0].rows, 2);
+	Mat_d MeanShape = Mat_d::zeros(allShape[0].rows, 2);
 
 	for (int32_t i = 0; i < allShape.size(); ++i)
-		meanShape += allShape[i];
-	meanShape /= static_cast<double_t>(allShape.size());
+		MeanShape += allShape[i];
+	MeanShape /= static_cast<double_t>(allShape.size());
 
-	return meanShape;
+	return MeanShape;
+}
+
+Mat_d GetMeanShape2(const vector<Mat_d>& allShape, const vector<cv::Rect2d>& allBoxes)
+{
+	Mat_d MeanShape = allShape[0].clone();
+	vector<Mat_d> TempAllShape;
+	for (int32_t i = 0; i < 20; ++i)
+	{
+		for (const auto& var : allShape)
+		{
+			Mat_d Transform = FgGetAffineTransform(var, MeanShape);
+			vector<cv::Point2d> TempVec;
+
+			cv::transform(ShapeToVecPoint(var), TempVec, Transform);
+			TempAllShape.push_back(VecPointToShape(TempVec));
+		}
+
+		MeanShape = Mat_d::zeros(allShape[0].rows, 2);
+
+		for (int32_t i = 0; i < TempAllShape.size(); ++i)
+			MeanShape += TempAllShape[i];
+		MeanShape /= static_cast<double_t>(TempAllShape.size());
+
+		//Normalize
+		MeanShape = NormalizeFromEye(MeanShape);
+	}
+
+	return MeanShape;
 }
 
 double CalcVariance(const vector<double_t>& vec)
@@ -105,13 +168,6 @@ Mat_d VecPointToShape(const vector<cv::Point2d>& VecPoint)
 	}
 	return Ret;
 }
-
-
-vector<Mat_uc>				g_ImageVec;
-vector<Mat_d>				g_TruthShapeVec;
-vector<cv::Rect2d>			g_BoxVec;
-FgLBFParam					g_TrainParam;
-vector<cv::Point2f>			g_ConvexHull;
 
 std::ofstream & operator<<(std::ofstream & Out, Mat_d & Obj)
 {
@@ -149,7 +205,6 @@ std::ifstream & operator>>(std::ifstream & In, Mat_d & Obj)
 	return In;
 }
 
-
 Mat_d FgGetAffineTransform(const Mat_d& ShapeFrom, const Mat_d& ShapeTo)
 {
 	if (ShapeFrom.rows != ShapeTo.rows || ShapeFrom.cols != 2 || ShapeTo.cols != 2)
@@ -165,7 +220,6 @@ Mat_d FgGetAffineTransform(const Mat_d& ShapeFrom, const Mat_d& ShapeTo)
 	}
 	return ((X.t() * X).inv()*(X.t() * ShapeTo)).t();
 }
-
 
 double_t CalculateError(Mat_d& TruthShape, Mat_d& PredictedShape)
 {
@@ -248,3 +302,10 @@ cv::Mat DrawLandmark(const Mat_d & Shape, const cv::Mat & Image, bool isDrawPoin
 	}
 	return Ret;
 }
+
+
+vector<Mat_uc>				g_ImageVec;
+vector<Mat_d>				g_TruthShapeVec;
+vector<cv::Rect2d>			g_BoxVec;
+FgLBFParam					g_TrainParam;
+vector<cv::Point2f>			g_ConvexHull;

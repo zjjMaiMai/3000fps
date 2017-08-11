@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<CommonSettings xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <CodeCoverage>
+    <ViewModel>
+      <RunPhase1>true</RunPhase1>
+      <AppCollection>
+        <AppDataViewModel>
+          <Application>$(TargetPath)</Application>
+          <Arguments>Predict F:\Datasets\ Cam</Arguments>
+          <Directory>$(ProjectDir)</Directory>
+          <Environment>PATH=$(ProjectDir)\..\OpenCV\dll</Environment>
+          <MergeEnvironment>true</MergeEnvironment>
+        </AppDataViewModel>
+      </AppCollection>
+      <RunPhase2>true</RunPhase2>
+      <RunPhase3>true</RunPhase3>
+    </ViewModel>
+    <InstrumentThreadSafe>false</InstrumentThreadSafe>
+    <Dictionary>
+      <ArrayOfElement />
+    </Dictionary>
+  </CodeCoverage>
+</CommonSettings>
